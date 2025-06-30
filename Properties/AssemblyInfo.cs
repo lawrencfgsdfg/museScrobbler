@@ -2,7 +2,7 @@
 using MelonLoader;
 using Main = museScrobbler.Main;
 
-[assembly: MelonInfo(typeof(Main), "Template Mod", "1.0.0", "AshtonMemer")]
+[assembly: MelonInfo(typeof(Main), "Muse Scrobbler", "1.0.0", "lawrencfgsdfg")]
 [assembly: MelonGame("PeroPeroGames", "MuseDash")]
 
 [assembly: AssemblyTitle("museScrobbler")]
@@ -10,7 +10,7 @@ using Main = museScrobbler.Main;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Muse Dash Modding Community")]
 [assembly: AssemblyProduct("museScrobbler")]
-[assembly: AssemblyCopyright("Copyright © AshtonMemer 2024")]
+[assembly: AssemblyCopyright("Copyright © lawrencfgsdfg 2025")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

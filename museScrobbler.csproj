@@ -13,6 +13,16 @@
   </Target>
 
   <ItemGroup>
+    <None Remove="libs\IF.Lastfm.Core.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="libs\IF.Lastfm.Core.dll" WithCulture="false">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="0Harmony">
       <HintPath>$(MD_NET6_DIRECTORY)\MelonLoader\net6\0Harmony.dll</HintPath>
     </Reference>
@@ -31,9 +41,17 @@
     <Reference Include="MelonLoader">
       <HintPath>$(MD_NET6_DIRECTORY)\MelonLoader\net6\MelonLoader.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>libs\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(MD_NET6_DIRECTORY)\MelonLoader\Il2CppAssemblies\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+	
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Inflatable.Lastfm" Version="1.2.0" />
   </ItemGroup>
 
 </Project>
