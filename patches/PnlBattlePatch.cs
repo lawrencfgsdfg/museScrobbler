@@ -20,18 +20,16 @@ internal class PnlBattleOnPauseClickedPatch
         return method;
     }
 
-    // this event is called on pause screen, which is before restart/exit 
-    // BUT it could be skipped if other mods directly restart/exit ... todo ?
+    // TODO: mods to directly restart/exit may skip this entirely
     private static void Postfix(PnlBattle __instance)
     {
         float progress = AudioManager.instance.bgm.time;
         float length = AudioManager.instance.bgm.clip.length;
 
-        Console.WriteLine("HERE " + progress + " " + length);
-
-        // we have listened to more than half the song, so should scrobble
-        if ((progress / length) > 0.49f) {
-            Scrobbler.setShouldScrobble(true);
+        if (length > 29.9f){ // song is over 30s long
+            if ((progress / length) > 0.49f || progress > 240) { // 50% scrobbled or more than 4 min passed
+                Scrobbler.setShouldScrobble(true);
+            }
         }
     }
 }
