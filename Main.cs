@@ -1,65 +1,119 @@
-﻿using IF.Lastfm.Core.Api;
+﻿using System.Diagnostics;
+using System.Net;
+using System.Text.Json;
+using HarmonyLib.Tools;
+using IF.Lastfm.Core.Api;
+using IF.Lastfm.Core.Objects;
 using MelonLoader;
-
-using System.Reflection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using File = System.IO.File;
+using Path = System.IO.Path;
 
 namespace museScrobbler
 {
+    class Config {
+        public string apiKey { get; set; } = "";
+        public string apiSecret { get; set; } = "";
+    }
+
     public class Main : MelonMod
     {
-        static string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UserData", "lastfmConfig.ini");
+        static string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UserData", "lastfmConfig.json");
+        static string sessionFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UserData", "lastfm.session");
 
-        //private LastfmClient lastfmClient;
-
-        public override void OnInitializeMelon()
+        public override async void OnInitializeMelon()
         {
-            // i had an entire method here before i learned about the Plugins folder
-            // ts took me forever for no reason bruh  
-            // i think having it there is cleaner than dynamically loading it ? maybe
-            //AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
-
-            if (!File.Exists(configPath)) {
-                File.WriteAllLines(configPath, new[] {
-                    "apiKey=",
-                    "apiSecret=",
-                    "username=", // ts plaintext  broken heart emoji
-                    "password="
-                });
-                LoggerInstance.Msg("lastfm config file did not exist, so it has been created");
-            } else {
-                string apiKey, apiSecret, username, password;
-                apiKey = apiSecret = username = password = "";
-
-                foreach (var line in File.ReadAllLines(configPath)) // thanks gpt
-                {
-                    var trimmed = line.Trim();
-                    if (string.IsNullOrEmpty(trimmed) || !trimmed.Contains("=")) continue;
-
-                    var parts = trimmed.Split('=', 2);
-                    string key = parts[0].Trim(), value = parts[1].Trim();
-
-                    switch (key)
-                    {
-                        case "apiKey": apiKey = value; break;
-                        case "apiSecret": apiSecret = value; break;
-                        case "username": username = value; break;
-                        case "password": password = value; break;
-                    }
-                }
-                Scrobbler scrobbler = new Scrobbler(apiKey, apiSecret, username, password);
-            }
-
+            Scrobbler scrobbler = new Scrobbler(await CreateScrobbler());
             LoggerInstance.Msg("museScrobbler initialized!");
 
             base.OnInitializeMelon();
         }
 
-        /*
-        public override void OnSceneWasLoaded(int buildIndex, string sceneName) {
-            LoggerInstance.Msg("HERE HAI :3  " + buildIndex+" "+sceneName);
-            base.OnSceneWasLoaded(buildIndex, sceneName);
+        // this is a chonker of a function
+        public static async Task<LastfmClient> CreateScrobbler()
+        {
+            LastAuth auth;
+            Config config;
+
+            // read and get apiKey and apiSecret
+            if (File.Exists(configPath)) {
+                config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configPath));
+                MelonLogger.Msg("read lastfm config file");
+            } else {
+                config = new Config();
+                File.WriteAllText(configPath, JsonConvert.SerializeObject(config, Formatting.Indented));
+                MelonLogger.Msg("lastfm config file did not exist - it has been created");
+
+                return null;
+            }
+
+            var apiKey = config.apiKey;
+            var apiSecret = config.apiSecret;
+
+            // if the session file exists
+            if (File.Exists(sessionFile)) {
+                // create auth from session
+                auth = new LastAuth(apiKey, apiSecret);
+                LastUserSession session = JsonConvert.DeserializeObject<LastUserSession>(File.ReadAllText(sessionFile));
+                auth.LoadSession(session);
+
+                MelonLogger.Msg("lastfm session file found");
+
+                if(auth.Authenticated) {
+                    MelonLogger.Msg("authenticated from lastfm session file successfully!");
+                    return (new LastfmClient(auth));
+                }
+                else MelonLogger.Msg("authentication from session file unsuccessful!"); // continue
+            }
+
+            // if session file does not exist , we do all this stuff below ...
+
+            int port = 54321;
+            string doneUrl = $"http://localhost:{port}";
+
+            // create http listener
+            var listener = new HttpListener();
+            listener.Prefixes.Add($"http://localhost:{port}/");
+            listener.Start();
+
+            // url that user must open to authenticate
+            string url = $"http://www.last.fm/api/auth/?api_key={apiKey}&cb={doneUrl}/";
+            MelonLogger.Msg("user must authenticate - if not automatically opened, please open: \n" + url + "\n");
+
+            // open in browser
+            Process.Start(new ProcessStartInfo{ FileName = url, UseShellExecute = true });
+
+            // wait for the page to open
+            var context = await listener.GetContextAsync();
+
+            // obtain token, which is appended at the end of the localhost URL
+            // <callback_url>/?token=xxxxxxx
+            var request = context.Request;
+            string token = request.QueryString["token"];
+
+            // wrap up localhost stuff
+            var r = context.Response;
+            var buffer = System.Text.Encoding.UTF8.GetBytes("you can close this tab now :3");
+            r.ContentLength64 = buffer.Length;
+            r.OutputStream.Write(buffer);
+            r.OutputStream.Close();
+
+            listener.Stop();
+
+            // create auth
+            auth = new LastAuth(apiKey, apiSecret);
+            var resp = await auth.GetSessionTokenAsync(token);
+            MelonLogger.Msg("lastfm auth success? " + auth.Authenticated);
+
+            var lastfm = new LastfmClient(auth);
+
+            // save the session to file, this will not need to be done again until session expires
+            var json = JsonConvert.SerializeObject(auth.UserSession, Formatting.Indented);
+            File.WriteAllText(sessionFile, json);
+
+            return lastfm;
         }
-        */
 
     }
 }

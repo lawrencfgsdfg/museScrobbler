@@ -5,6 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <OutputType>Library</OutputType>
+    <UseWindowsForms>False</UseWindowsForms>
   </PropertyGroup>
 
   <Target Name="CopyDLLs" AfterTargets="Build">
@@ -13,13 +15,16 @@
   </Target>
 
   <ItemGroup>
-    <None Remove="libs\IF.Lastfm.Core.dll" />
+    <COMReference Include="{215d64d2-031c-33c7-96e3-61794cd1ee61}">
+      <WrapperTool>tlbimp</WrapperTool>
+      <VersionMinor>4</VersionMinor>
+      <VersionMajor>2</VersionMajor>
+      <Guid>215d64d2-031c-33c7-96e3-61794cd1ee61</Guid>
+    </COMReference>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="libs\IF.Lastfm.Core.dll" WithCulture="false">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,6 +33,9 @@
     </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>$(MD_NET6_DIRECTORY)\MelonLoader\Il2CppAssemblies\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="IF.Lastfm.Core">
+      <HintPath>libs\IF.Lastfm.Core.dll</HintPath>
     </Reference>
     <Reference Include="Il2CppInterop.Runtime">
       <HintPath>$(MD_NET6_DIRECTORY)\MelonLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
@@ -41,6 +49,9 @@
     <Reference Include="MelonLoader">
       <HintPath>$(MD_NET6_DIRECTORY)\MelonLoader\net6\MelonLoader.dll</HintPath>
     </Reference>
+    <Reference Include="System.Windows.Forms">
+      <HintPath>..\..\..\..\..\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\6.0.36\ref\net6.0\System.Windows.Forms.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.AudioModule">
       <HintPath>libs\UnityEngine.AudioModule.dll</HintPath>
     </Reference>
@@ -48,10 +59,6 @@
       <HintPath>$(MD_NET6_DIRECTORY)\MelonLoader\Il2CppAssemblies\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
 	
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Inflatable.Lastfm" Version="1.2.0" />
   </ItemGroup>
 
 </Project>

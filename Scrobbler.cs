@@ -2,23 +2,17 @@
 using IF.Lastfm.Core;
 using IF.Lastfm.Core.Api;
 using IF.Lastfm.Core.Objects;
+using IF.Lastfm.Core.Scrobblers;
 using Il2CppAssets.Scripts.PeroTools.Commons;
 using Il2CppAssets.Scripts.PeroTools.Managers;
 using MelonLoader;
 using UnityEngine.Assertions;
 
 public class Scrobbler {
-
     static LastfmClient lastfm;
-    public Scrobbler(string apiKey, string apiSecret, string username, string password) {
-        lastfm = new LastfmClient(apiKey, apiSecret);
-        try {
-            lastfm.Auth.GetSessionTokenAsync(username, password);
-            MelonLogger.Msg("lastfm verification successful!");
-        } catch (Exception e) {
-            MelonLogger.Error("lastfm verification failed!");
-            MelonLogger.Error(e.Message);
-        }
+
+    public Scrobbler(LastfmClient lastfmClient) {
+        lastfm = lastfmClient;
     }
 
     static String songName = "";
@@ -44,11 +38,6 @@ public class Scrobbler {
     // welp. i guess this is just not possible bruh
     //public static void setNotListening() {
     //}
-
-
-    // hangs the game xd
-    //static readonly AudioManager audioManager = Il2CppAssets.Scripts.PeroTools.Commons.Singleton<AudioManager>.instance;
-
 
     // setters
     public static void setMetadata(string song, string artist) {

@@ -2,7 +2,7 @@
 using MelonLoader;
 using Main = museScrobbler.Main;
 
-[assembly: MelonInfo(typeof(Main), "Muse Scrobbler", "1.0.0", "lawrencfgsdfg")]
+[assembly: MelonInfo(typeof(Main), "Muse Scrobbler", "1.1.0", "lawrencfgsdfg")]
 [assembly: MelonGame("PeroPeroGames", "MuseDash")]
 
 [assembly: AssemblyTitle("museScrobbler")]
